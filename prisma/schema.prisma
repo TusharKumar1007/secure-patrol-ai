@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  role      String   @default("GUARD") // 'GUARD' or 'SUPERVISOR'
+  createdAt DateTime @default(now())
+  logs      PatrolLog[]
+}
+
+model Checkpoint {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  logs        PatrolLog[]
+}
+
+model PatrolLog {
+  id            String   @id @default(uuid())
+  checkInTime   DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  checkpointId  String
+  checkpoint    Checkpoint @relation(fields: [checkpointId], references: [id])
+}
