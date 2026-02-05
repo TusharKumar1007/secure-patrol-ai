@@ -8,7 +8,7 @@ An MVP solution to digitize security patrols, replacing paper logbooks with real
 ## 🚀 Key Features
 - **Guard Interface:** Mobile-friendly check-in system.
 - **Supervisor Dashboard:** Real-time feed of patrol logs using Server Actions.
-- **AI Anomaly Detection:** Uses Google Gemini 1.5 to analyze patrol patterns and detect low activity or missed rounds.
+- **AI Anomaly Detection:** Uses Google gemini 3 flash preview to analyze patrol patterns and detect low activity or missed rounds.
 - **Passwordless Auth:** Simple email-based login for quick access.
 
 ## 🛠️ Tech Stack
