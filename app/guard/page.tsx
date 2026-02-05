@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-// Define what a Checkpoint looks like
 interface Checkpoint {
   id: string;
   name: string;
@@ -11,27 +11,79 @@ interface Checkpoint {
 export default function GuardDashboard() {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
-  // 1. Fetch data when the page loads
+  const [userId, setUserId] = useState<string | null>(null);
+  const router = useRouter();
+
+
   useEffect(() => {
+
+    const storedId = localStorage.getItem('secure_user_id');
+    
+
+    if (!storedId) {
+      router.push('/'); 
+      return;
+    }
+    
+    setUserId(storedId);
+
+
     fetch('/api/checkpoints')
       .then((res) => res.json())
       .then((data) => {
         setCheckpoints(data);
         setLoading(false);
-      });
-  }, []);
+      })
+      .catch(err => setLoading(false));
+  }, [router]);
 
-  // 2. Function to handle the click (We will make this work later)
-  const handleCheckIn = (name: string) => {
-    alert(`Checking in at: ${name}`);
+
+  const handleCheckIn = async (checkpointId: string) => {
+    if (!userId) return; 
+
+    setCheckingIn(checkpointId); 
+
+    try {
+      const res = await fetch('/api/logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId, 
+          checkpointId: checkpointId,
+        }),
+      });
+
+      if (res.ok) {
+        alert("✅ Success! Check-in recorded.");
+      } else {
+        alert("❌ Error: Could not check in.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("❌ Network Error");
+    } finally {
+      setCheckingIn(null); 
+    }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading locations...</div>;
+  if (loading) return <div className="p-8 text-center">Verifying credentials...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">👮 Guard Patrol</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">👮 Guard Patrol</h1>
+        <button 
+          onClick={() => {
+            localStorage.clear();
+            router.push('/');
+          }}
+          className="text-sm text-red-500 underline"
+        >
+          Logout
+        </button>
+      </div>
       
       <div className="space-y-4">
         {checkpoints.map((spot) => (
@@ -42,10 +94,13 @@ export default function GuardDashboard() {
             </div>
             
             <button 
-              onClick={() => handleCheckIn(spot.name)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 active:scale-95 transition-all"
+              onClick={() => handleCheckIn(spot.id)}
+              disabled={checkingIn === spot.id}
+              className={`px-6 py-3 rounded-lg font-bold text-white transition-all ${
+                checkingIn === spot.id ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
+              }`}
             >
-              Check In
+              {checkingIn === spot.id ? 'Saving...' : 'Check In'}
             </button>
           </div>
         ))}

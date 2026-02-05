@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    // Fetch all checkpoints from the database
+
     const checkpoints = await prisma.checkpoint.findMany();
     return NextResponse.json(checkpoints);
   } catch (error) {
