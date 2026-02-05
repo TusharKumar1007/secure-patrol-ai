@@ -2,6 +2,8 @@
 
 An MVP solution to digitize security patrols, replacing paper logbooks with real-time tracking and AI-driven insights. Built for the Commando360 interview challenge.
 
+🔗 **Live Demo:** [https://secure-patrol-ai.vercel.app/]
+🎥 **Video Walkthrough:** coming soon
 
 ## 🚀 Key Features
 - **Guard Interface:** Mobile-friendly check-in system.
