@@ -23,6 +23,7 @@ export default function LoginPage() {
 
       localStorage.setItem('secure_user_id', data.id);
       localStorage.setItem('secure_user_name', data.name);
+      localStorage.setItem('secure_user_role', data.role.trim()); 
       
 
       if (data.role.trim() === 'SUPERVISOR') {

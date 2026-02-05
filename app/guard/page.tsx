@@ -68,7 +68,31 @@ export default function GuardDashboard() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Verifying credentials...</div>;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-4 ">
+
+        <div className="flex justify-between items-center mb-6">
+          <div className="animate-pulse h-8 bg-gray-300 rounded w-48"></div>
+          <div className="animate-pulse h-4 bg-gray-300 rounded w-16"></div>
+        </div>
+
+
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center">
+              <div>
+                <div className="animate-pulse h-6 bg-gray-200 rounded w-32 mb-2"></div>
+                <div className="animate-pulse h-4 bg-gray-100 rounded w-24"></div>
+              </div>
+              <div className="animate-pulse h-10 bg-gray-200 rounded-lg w-28"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
