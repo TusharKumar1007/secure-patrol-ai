@@ -15,7 +15,11 @@ export async function POST() {
 
 
   const logsList = logs.map(log => 
-    `- Guard ${log.user.name} visited ${log.checkpoint.name} at ${new Date(log.checkInTime).toLocaleTimeString()}`
+    `- Guard ${log.user.name} visited ${log.checkpoint.name} at ${new Date(log.checkInTime).toLocaleTimeString("en-US", {
+      timeZone: "Asia/Kolkata", 
+      dateStyle: "medium",
+      timeStyle: "short",
+    })}`
   ).join('\n');
 
   try {
