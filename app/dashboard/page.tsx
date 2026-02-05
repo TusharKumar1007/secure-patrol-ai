@@ -89,37 +89,49 @@ export default function SupervisorDashboard() {
          </div>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-        <table className="w-full text-left">
-          <thead className="bg-slate-100 text-slate-600 uppercase text-sm font-semibold">
-            <tr>
-              <th className="p-4">Time</th>
-              <th className="p-4">Guard</th>
-              <th className="p-4">Location</th>
-              <th className="p-4">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {logs.map((log) => (
-              <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 text-slate-600">
-                  {new Date(log.checkInTime).toLocaleTimeString()}
-                </td>
-                <td className="p-4 font-medium text-slate-900">
-                  {log.user.name}
-                </td>
-                <td className="p-4 text-blue-600 font-medium">
-                  📍 {log.checkpoint.name}
-                </td>
-                <td className="p-4">
-                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
-                    VERIFIED
-                  </span>
-                </td>
+
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+        
+        <div className="overflow-x-auto">
+          
+          <table className="w-full text-left whitespace-nowrap">
+            <thead className="bg-slate-100 text-slate-600 uppercase text-sm font-semibold">
+              <tr>
+                <th className="p-4">Time</th>
+                <th className="p-4">Guard</th>
+                <th className="p-4">Location</th>
+                <th className="p-4">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {logs.map((log) => (
+                <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 text-slate-600 text-sm">
+                    {new Date(log.checkInTime).toLocaleTimeString()}
+                  </td>
+                  <td className="p-4 font-medium text-slate-900">
+                    {log.user.name}
+                  </td>
+                  <td className="p-4 text-blue-600 font-medium">
+                    📍 {log.checkpoint.name}
+                  </td>
+                  <td className="p-4">
+                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">
+                      VERIFIED
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+        </div>
+        
+        {logs.length === 0 && (
+          <div className="p-8 text-center text-gray-400">
+            No patrols recorded yet.
+          </div>
+        )}
       </div>
     </div>
   );
