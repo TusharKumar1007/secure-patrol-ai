@@ -18,19 +18,28 @@ export default function SupervisorDashboard() {
 
   useEffect(() => {
     const storedRole = localStorage.getItem("secure_user_role");
-
-
     if (!storedRole || storedRole !== "SUPERVISOR") {
-
       window.location.href = "/";
       return;
     }
-    fetch("/api/logs")
-      .then((res) => res.json())
-      .then((data) => {
+
+    const fetchLogs = async () => {
+      try {
+        const res = await fetch("/api/logs");
+        const data = await res.json();
         setLogs(data);
         setLoading(false);
-      });
+      } catch (err) {
+        console.error("Failed to fetch logs");
+      }
+    };
+
+    fetchLogs();
+
+    //pooling live data every 2 second
+    const intervalId = setInterval(fetchLogs, 2000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const generateAiReport = async () => {
@@ -117,7 +126,7 @@ export default function SupervisorDashboard() {
           <div className="animate-pulse bg-purple-200 h-4 w-3/5 rounded mt-2"></div>
           <div className="animate-pulse bg-purple-200 h-4 w-4/5 rounded mt-2"></div>
         </div>
-      ):null}
+      ) : null}
       {aiReport && (
         <div className="max-w-4xl mx-auto mb-6 bg-purple-50 border border-purple-200 p-6 rounded-xl animate-fade-in">
           <h3 className="text-purple-900 font-bold mb-2 flex items-center gap-2">
@@ -164,7 +173,12 @@ export default function SupervisorDashboard() {
                   className="hover:bg-slate-50 transition-colors"
                 >
                   <td className="p-4 text-slate-600 text-sm">
-                    {new Date(log.checkInTime).toLocaleTimeString()}
+                    {new Date(log.checkInTime).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </td>
                   <td className="p-4 font-medium text-slate-900">
                     {log.user.name}

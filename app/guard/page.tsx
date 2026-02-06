@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface Checkpoint {
   id: string;
@@ -16,41 +16,36 @@ export default function GuardDashboard() {
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
 
-
   useEffect(() => {
-
-    const storedId = localStorage.getItem('secure_user_id');
-    
+    const storedId = localStorage.getItem("secure_user_id");
 
     if (!storedId) {
-      router.push('/'); 
+      router.push("/");
       return;
     }
-    
+
     setUserId(storedId);
 
-
-    fetch('/api/checkpoints')
+    fetch("/api/checkpoints")
       .then((res) => res.json())
       .then((data) => {
         setCheckpoints(data);
         setLoading(false);
       })
-      .catch(err => setLoading(false));
+      .catch((err) => setLoading(false));
   }, [router]);
 
-
   const handleCheckIn = async (checkpointId: string) => {
-    if (!userId) return; 
+    if (!userId) return;
 
-    setCheckingIn(checkpointId); 
+    setCheckingIn(checkpointId);
 
     try {
-      const res = await fetch('/api/logs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: userId, 
+          userId: userId,
           checkpointId: checkpointId,
         }),
       });
@@ -64,24 +59,24 @@ export default function GuardDashboard() {
       console.error(error);
       alert("❌ Network Error");
     } finally {
-      setCheckingIn(null); 
+      setCheckingIn(null);
     }
   };
-
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 p-4 ">
-
         <div className="flex justify-between items-center mb-6">
           <div className="animate-pulse h-8 bg-gray-300 rounded w-48"></div>
           <div className="animate-pulse h-4 bg-gray-300 rounded w-16"></div>
         </div>
 
-
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center">
+            <div
+              key={i}
+              className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center"
+            >
               <div>
                 <div className="animate-pulse h-6 bg-gray-200 rounded w-32 mb-2"></div>
                 <div className="animate-pulse h-4 bg-gray-100 rounded w-24"></div>
@@ -98,33 +93,40 @@ export default function GuardDashboard() {
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">👮 Guard Patrol</h1>
-        <button 
+        <button
           onClick={() => {
             localStorage.clear();
-            router.push('/');
+            router.push("/");
           }}
           className="text-sm text-red-500 underline"
         >
           Logout
         </button>
       </div>
-      
+
       <div className="space-y-4">
         {checkpoints.map((spot) => (
-          <div key={spot.id} className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center">
+          <div
+            key={spot.id}
+            className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center"
+          >
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">{spot.name}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {spot.name}
+              </h2>
               <p className="text-gray-500 text-sm">Tap to scan</p>
             </div>
-            
-            <button 
+
+            <button
               onClick={() => handleCheckIn(spot.id)}
               disabled={checkingIn === spot.id}
               className={`px-6 py-3 rounded-lg font-bold text-white transition-all ${
-                checkingIn === spot.id ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700 active:scale-95'
+                checkingIn === spot.id
+                  ? "bg-gray-400"
+                  : "bg-blue-600 hover:bg-blue-700 active:scale-95"
               }`}
             >
-              {checkingIn === spot.id ? 'Saving...' : 'Check In'}
+              {checkingIn === spot.id ? "Saving..." : "Check In"}
             </button>
           </div>
         ))}
