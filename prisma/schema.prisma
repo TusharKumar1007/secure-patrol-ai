@@ -20,6 +20,8 @@ model Checkpoint {
   id          String   @id @default(uuid())
   name        String
   description String?
+  latitude    Float?   
+  longitude   Float?   
   logs        PatrolLog[]
 }
 
@@ -30,4 +32,6 @@ model PatrolLog {
   user          User     @relation(fields: [userId], references: [id])
   checkpointId  String
   checkpoint    Checkpoint @relation(fields: [checkpointId], references: [id])
+  gpsLatitude   Float?   
+  gpsLongitude  Float? 
 }

@@ -26,10 +26,21 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { userId, checkpointId } = body;
 
+
+    const checkpoint = await prisma.checkpoint.findUnique({
+      where: { id: checkpointId }
+    });
+
+    if (!checkpoint) return NextResponse.json({ error: 'Checkpoint not found' }, { status: 404 });
+
+
     const newLog = await prisma.patrolLog.create({
       data: {
         userId: userId,
         checkpointId: checkpointId,
+
+        gpsLatitude: checkpoint.latitude || 12.9716, 
+        gpsLongitude: checkpoint.longitude || 77.5946
       },
     });
 
