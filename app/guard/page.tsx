@@ -56,7 +56,7 @@ export default function GuardDashboard() {
         alert("❌ Error: Could not check in.");
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       alert("❌ Network Error");
     } finally {
       setCheckingIn(null);

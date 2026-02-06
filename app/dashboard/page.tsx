@@ -30,7 +30,7 @@ export default function SupervisorDashboard() {
         setLogs(data);
         setLoading(false);
       } catch (err) {
-        console.error("Failed to fetch logs");
+        // console.error("Failed to fetch logs");
       }
     };
 
