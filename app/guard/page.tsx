@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface Checkpoint {
   id: string;
@@ -96,6 +97,7 @@ export default function GuardDashboard() {
         <button
           onClick={() => {
             localStorage.clear();
+            toast.success("Logged out")
             router.push("/");
           }}
           className="text-sm text-red-500 underline"
