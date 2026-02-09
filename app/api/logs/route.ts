@@ -78,3 +78,19 @@ export async function POST(request: Request) {
     );
   }
 }
+
+
+export async function PUT(request: Request) {
+  try {
+    const { logId } = await request.json();
+
+    const updatedLog = await prisma.patrolLog.update({
+      where: { id: logId },
+      data: { status: 'RESOLVED' } 
+    });
+
+    return NextResponse.json({ success: true, log: updatedLog });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update log' }, { status: 500 });
+  }
+}

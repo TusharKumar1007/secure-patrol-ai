@@ -16,6 +16,13 @@ export default function ManageCheckpoints() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const storedRole = localStorage.getItem("secure_user_role");
+    if (!storedRole || storedRole !== "SUPERVISOR") {
+      window.location.href = "/";
+    }
+  }, []);
+
+  useEffect(() => {
     fetch("/api/checkpoints")
       .then((res) => res.json())
       .then((data) => {

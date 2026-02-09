@@ -100,6 +100,31 @@ export default function SupervisorDashboard() {
     }
   };
 
+  const handleResolve = async (logId: string) => {
+    if (
+      !confirm("Confirm that this emergency is handled and the guard is safe?")
+    )
+      return;
+
+    setLogs((prevLogs) =>
+      prevLogs.map((log) =>
+        log.id === logId ? { ...log, status: "RESOLVED" } : log,
+      ),
+    );
+
+    try {
+      await fetch("/api/logs", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logId }),
+      });
+
+      fetchLogs("silent");
+    } catch (error) {
+      alert("Failed to resolve. Check connection.");
+    }
+  };
+
   const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -348,8 +373,21 @@ export default function SupervisorDashboard() {
                   </td>
                   <td className="p-4">
                     {log.status === "SOS" ? (
-                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold border border-red-200 animate-pulse">
-                        🚨 SOS
+                      <div className="flex items-center gap-3">
+                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold border border-red-200 animate-pulse flex items-center gap-1">
+                          🚨 SOS
+                        </span>
+
+                        <button
+                          onClick={() => handleResolve(log.id)}
+                          className="bg-slate-900 text-white text-xs font-bold px-3 py-1 rounded shadow-md hover:bg-slate-700 transition-all active:scale-95"
+                        >
+                          RESOLVE
+                        </button>
+                      </div>
+                    ) : log.status === "RESOLVED" ? (
+                      <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200">
+                        RESOLVED
                       </span>
                     ) : (
                       <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-200">
