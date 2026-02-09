@@ -21,7 +21,7 @@ export default function LoginPage() {
     const data = await res.json();
 
     if (res.ok) {
-            toast.success("Sucessfully Loged in");
+      toast.success("Successfully Loged in");
 
       localStorage.setItem("secure_user_id", data.id);
       localStorage.setItem("secure_user_name", data.name);

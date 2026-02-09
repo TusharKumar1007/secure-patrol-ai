@@ -22,6 +22,8 @@ model Checkpoint {
   description String?
   latitude    Float?   
   longitude   Float?   
+  instruction String?  @default("Verify identity and check for unauthorized objects.")
+  videoUrl    String?  @default("https://www.youtube.com/embed/ScMzIvxBSi4") 
   logs        PatrolLog[]
 }
 
@@ -34,4 +36,8 @@ model PatrolLog {
   checkpoint    Checkpoint @relation(fields: [checkpointId], references: [id])
   gpsLatitude   Float?   
   gpsLongitude  Float? 
+  status        String   @default("VERIFIED")
+  @@index([userId])
+  @@index([checkpointId])
+  @@index([checkInTime])
 }

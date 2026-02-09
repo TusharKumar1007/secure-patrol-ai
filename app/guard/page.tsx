@@ -7,21 +7,74 @@ import toast from "react-hot-toast";
 interface Checkpoint {
   id: string;
   name: string;
+  instruction?: string;
+  videoUrl?: string;
 }
 
 export default function GuardDashboard() {
+  const [isSosActive, setIsSosActive] = useState(false);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
 
+  const [showInstruction, setShowInstruction] = useState(false);
+  const [selectedCheckpoint, setSelectedCheckpoint] =
+    useState<Checkpoint | null>(null);
+
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
 
+  const openInstruction = (checkpoint: Checkpoint) => {
+    setSelectedCheckpoint(checkpoint);
+    setShowInstruction(true);
+  };
+
+  const confirmCheckIn = async () => {
+    if (!selectedCheckpoint) return;
+    setShowInstruction(false);
+    await handleCheckIn(selectedCheckpoint.id);
+  };
+
+  const handleSOS = async () => {
+    if (!confirm("⚠️ ARE YOU SURE? This will alert all Supervisors.")) return;
+
+    setIsSosActive(true);
+
+    try {
+      const firstPoint = checkpoints[0]?.id;
+
+      await fetch("/api/logs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: userId,
+          checkpointId: firstPoint,
+          status: "SOS",
+        }),
+      });
+
+      setTimeout(() => {
+        alert("🚨 EMERGENCY SIGNAL SENT 🚨");
+        setIsSosActive(false);
+      }, 3000);
+    } catch (error) {
+      setIsSosActive(false);
+      alert("Failed to send alert");
+    }
+  };
+
   useEffect(() => {
     const storedId = localStorage.getItem("secure_user_id");
+    const storedRole = localStorage.getItem("secure_user_role");
 
     if (!storedId) {
       router.push("/");
+      return;
+    }
+
+    if (storedRole === "SUPERVISOR") {
+      alert("⚠️ Access Denied: Supervisors cannot perform Check-Ins.");
+      router.push("/dashboard");
       return;
     }
 
@@ -52,12 +105,11 @@ export default function GuardDashboard() {
       });
 
       if (res.ok) {
-        alert("✅ Success! Check-in recorded.");
+        toast.success("Check-in Verified ✅");
       } else {
         alert("❌ Error: Could not check in.");
       }
     } catch (error) {
-      // console.error(error);
       alert("❌ Network Error");
     } finally {
       setCheckingIn(null);
@@ -71,19 +123,12 @@ export default function GuardDashboard() {
           <div className="animate-pulse h-8 bg-gray-300 rounded w-48"></div>
           <div className="animate-pulse h-4 bg-gray-300 rounded w-16"></div>
         </div>
-
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center"
-            >
-              <div>
-                <div className="animate-pulse h-6 bg-gray-200 rounded w-32 mb-2"></div>
-                <div className="animate-pulse h-4 bg-gray-100 rounded w-24"></div>
-              </div>
-              <div className="animate-pulse h-10 bg-gray-200 rounded-lg w-28"></div>
-            </div>
+              className="bg-white p-6 rounded-xl shadow-md h-32"
+            ></div>
           ))}
         </div>
       </div>
@@ -91,16 +136,18 @@ export default function GuardDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    <div className="min-h-screen bg-gray-100 p-4 pb-32">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">👮 Guard Patrol</h1>
         <button
           onClick={() => {
-            localStorage.clear();
-            toast.success("Logged out")
+            localStorage.removeItem("secure_user_id");
+            localStorage.removeItem("secure_user_role");
+            localStorage.removeItem("secure_user_name");
+            toast.success("Logged out");
             router.push("/");
           }}
-          className="text-sm text-red-500 underline"
+          className="text-sm text-red-500 underline font-medium"
         >
           Logout
         </button>
@@ -110,29 +157,111 @@ export default function GuardDashboard() {
         {checkpoints.map((spot) => (
           <div
             key={spot.id}
-            className="bg-white p-6 rounded-xl shadow-md flex justify-between items-center"
+            className="bg-white p-5 rounded-xl shadow-sm border border-slate-200"
           >
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                {spot.name}
-              </h2>
-              <p className="text-gray-500 text-sm">Tap to scan</p>
+            <div className="flex justify-between items-start mb-3">
+              <h2 className="text-lg font-bold text-gray-900">{spot.name}</h2>
+
+              <button
+                onClick={() => handleCheckIn(spot.id)}
+                disabled={checkingIn === spot.id}
+                className={`px-5 py-2 rounded-lg font-bold text-sm text-white shadow-sm transition-all ${
+                  checkingIn === spot.id
+                    ? "bg-gray-400"
+                    : "bg-blue-600 hover:bg-blue-700 active:scale-95"
+                }`}
+              >
+                {checkingIn === spot.id ? "Saving..." : "Check In"}
+              </button>
             </div>
 
-            <button
-              onClick={() => handleCheckIn(spot.id)}
-              disabled={checkingIn === spot.id}
-              className={`px-6 py-3 rounded-lg font-bold text-white transition-all ${
-                checkingIn === spot.id
-                  ? "bg-gray-400"
-                  : "bg-blue-600 hover:bg-blue-700 active:scale-95"
-              }`}
-            >
-              {checkingIn === spot.id ? "Saving..." : "Check In"}
-            </button>
+            <div className="bg-blue-50 rounded-lg p-3 flex justify-between items-center border border-blue-100">
+              <div className="flex items-start gap-2">
+                <span className="text-lg">📋</span>
+                <p className="text-xs text-blue-800 font-medium leading-relaxed">
+                  {spot.instruction || "Verify perimeter and check locks."}
+                </p>
+              </div>
+
+              <button
+                onClick={() => openInstruction(spot)}
+                className="ml-3 h-8 w-8 flex-shrink-0 bg-white rounded-full text-blue-600 shadow-sm border border-blue-200 flex items-center justify-center hover:scale-105 transition-transform"
+                title="Watch SOP Video"
+              >
+                ▶️
+              </button>
+            </div>
           </div>
         ))}
       </div>
+
+      <div className="fixed bottom-6 left-0 right-0 px-4 z-40">
+        <button
+          onClick={handleSOS}
+          className={`w-full py-4 rounded-xl font-black text-xl shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
+            isSosActive
+              ? "bg-red-600 animate-pulse text-white"
+              : "bg-slate-900 text-red-500 border-2 border-red-600"
+          }`}
+        >
+          <span>🚨</span>
+          {isSosActive ? "SENDING ALERT..." : "PANIC BUTTON"}
+        </button>
+      </div>
+
+      {isSosActive && (
+        <div className="fixed inset-0 bg-red-600/30 z-50 animate-pulse pointer-events-none"></div>
+      )}
+
+      {showInstruction && selectedCheckpoint && (
+        <div className="fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full h-56 bg-black">
+              <iframe
+                src={
+                  selectedCheckpoint.videoUrl ||
+                  "https://www.youtube.com/embed/ScMzIvxBSi4"
+                }
+                className="w-full h-full object-cover"
+                title="SOP Video"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+              />
+            </div>
+
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xl font-bold text-slate-900">
+                  {selectedCheckpoint.name} Protocol
+                </h3>
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">
+                  SOP
+                </span>
+              </div>
+
+              <p className="text-sm text-gray-500 mb-6">
+                Please review the video above to ensure compliance with security
+                standards before verifying this checkpoint.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowInstruction(false)}
+                  className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmCheckIn}
+                  className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>✅</span> VERIFY & CHECK IN
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
