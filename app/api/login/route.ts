@@ -6,9 +6,10 @@ const prisma = new PrismaClient();
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
+    const normaliseEmail = email.trim().toLowerCase();
 
     const user = await prisma.user.findUnique({
-      where: { email: email },
+      where: { email: normaliseEmail },
     });
 
     if (!user) {

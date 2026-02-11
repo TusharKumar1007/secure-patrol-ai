@@ -56,7 +56,7 @@ export default function LoginPage() {
             <input
               type="email"
               required
-              placeholder="guard1@test.com"
+              placeholder="john@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
@@ -72,7 +72,7 @@ export default function LoginPage() {
         </form>
 
         <div className="mt-6 text-xs text-center text-gray-400">
-          Tip: Use <b>guard1@test.com</b> or <b>admin@test.com</b>
+          Tip: Use <b>john@gmail.com</b> or <b>josh@admin.com</b>
         </div>
       </div>
     </div>
