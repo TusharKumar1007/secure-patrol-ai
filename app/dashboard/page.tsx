@@ -359,6 +359,7 @@ export default function SupervisorDashboard() {
                 >
                   <td className="p-4 text-slate-600 text-sm font-mono">
                     {new Date(log.checkInTime).toLocaleString("en-US", {
+                      timeZone: "Asia/Kolkata",
                       month: "short",
                       day: "numeric",
                       hour: "2-digit",

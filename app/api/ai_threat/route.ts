@@ -16,11 +16,15 @@ export async function POST() {
     const context = logs
       .map(
         (l) =>
-          `[${new Date(l.checkInTime).toLocaleTimeString("en-US", { hour12: false })}] ${l.user.name} @ ${l.checkpoint.name} (Status: ${l.status})`,
+          `[${new Date(l.checkInTime).toLocaleTimeString("en-US", {
+            timeZone: "Asia/Kolkata",
+            hour12: false,
+          })}] ${l.user.name} @ ${l.checkpoint.name} (Status: ${l.status})`,
       )
       .join("\n");
 
     const todayStr = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
       month: "short",
       day: "numeric",
     });

@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       .map(
         (l) =>
           `[${new Date(l.checkInTime).toLocaleString("en-US", {
+            timeZone: "Asia/Kolkata",
             month: "short",
             day: "numeric",
             hour: "2-digit",
@@ -29,6 +30,7 @@ export async function POST(req: Request) {
       .join("\n");
 
     const todayStr = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata",
       month: "short",
       day: "numeric",
     });
