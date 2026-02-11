@@ -26,7 +26,17 @@ export default function ManageCheckpoints() {
     fetch("/api/checkpoints")
       .then((res) => res.json())
       .then((data) => {
-        setCheckpoints(data);
+        if (Array.isArray(data)) {
+          setCheckpoints(data);
+        } else {
+          console.error("API returned non-array:", data);
+          setCheckpoints([]); 
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setCheckpoints([]); 
         setLoading(false);
       });
   }, []);
@@ -52,7 +62,6 @@ export default function ManageCheckpoints() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
-      <Toaster />
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-slate-900">
