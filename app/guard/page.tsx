@@ -12,6 +12,7 @@ interface Checkpoint {
 }
 
 export default function GuardDashboard() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [isSosActive, setIsSosActive] = useState(false);
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,11 @@ export default function GuardDashboard() {
 
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
+
+  const isDark = theme === "dark";
+  const surfaceCardClass = isDark
+    ? "bg-slate-900 border-slate-800"
+    : "bg-white border-slate-200";
 
   const openInstruction = (checkpoint: Checkpoint) => {
     setSelectedCheckpoint(checkpoint);
@@ -89,6 +95,22 @@ export default function GuardDashboard() {
       .catch((err) => setLoading(false));
   }, [router]);
 
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("sp_guard_theme");
+    if (storedTheme === "light" || storedTheme === "dark") {
+      setTheme(storedTheme);
+      return;
+    }
+
+    if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("sp_guard_theme", theme);
+  }, [theme]);
+
   const handleCheckIn = async (checkpointId: string) => {
     if (!userId) return;
 
@@ -118,16 +140,20 @@ export default function GuardDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 p-4 ">
+      <div
+        className={`min-h-screen p-4 transition-colors duration-300 ${
+          isDark ? "bg-slate-950" : "bg-gray-100"
+        }`}
+      >
         <div className="flex justify-between items-center mb-6">
-          <div className="animate-pulse h-8 bg-gray-300 rounded w-48"></div>
-          <div className="animate-pulse h-4 bg-gray-300 rounded w-16"></div>
+          <div className="animate-pulse h-8 bg-gray-300/80 rounded w-48"></div>
+          <div className="animate-pulse h-4 bg-gray-300/80 rounded w-16"></div>
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-xl shadow-md h-32"
+              className="bg-white/80 p-6 rounded-xl shadow-md h-32"
             ></div>
           ))}
         </div>
@@ -136,36 +162,66 @@ export default function GuardDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 pb-32">
+    <div
+      className={`min-h-screen p-4 pb-32 transition-colors duration-300 ${
+        isDark ? "bg-slate-950 text-slate-50" : "bg-gray-100 text-slate-900"
+      }`}
+    >
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">👮 Guard Patrol</h1>
-        <button
-          onClick={() => {
-            localStorage.removeItem("secure_user_id");
-            localStorage.removeItem("secure_user_role");
-            localStorage.removeItem("secure_user_name");
-            toast.success("Logged out");
-            router.push("/");
-          }}
-          className="text-sm text-red-500 underline font-medium"
-        >
-          Logout
-        </button>
+        <div>
+          <h1 className="text-2xl font-bold">
+            <span className="mr-1">👮</span> Guard Patrol
+          </h1>
+          <p className="text-xs text-slate-400">
+            Follow SOPs, verify checkpoints, and stay safe.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() =>
+              setTheme((prev) => (prev === "light" ? "dark" : "light"))
+            }
+            aria-label="Toggle light and dark mode"
+            aria-pressed={isDark}
+            className={`flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[11px] font-medium transition ${
+              isDark
+                ? "border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800"
+                : "border-slate-200 bg-white/70 text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            <span className="text-sm">{isDark ? "🌙" : "☀️"}</span>
+            <span>{isDark ? "Dark" : "Light"}</span>
+          </button>
+
+          <button
+            onClick={() => {
+              localStorage.removeItem("secure_user_id");
+              localStorage.removeItem("secure_user_role");
+              localStorage.removeItem("secure_user_name");
+              toast.success("Logged out");
+              router.push("/");
+            }}
+            className="text-xs md:text-sm text-red-400 hover:text-red-300 font-medium underline-offset-2 hover:underline"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
         {checkpoints.map((spot) => (
           <div
             key={spot.id}
-            className="bg-white p-5 rounded-xl shadow-sm border border-slate-200"
+            className={`p-5 rounded-xl shadow-sm border ${surfaceCardClass}`}
           >
             <div className="flex justify-between items-start mb-3">
-              <h2 className="text-lg font-bold text-gray-900">{spot.name}</h2>
+              <h2 className="text-lg font-semibold">{spot.name}</h2>
 
               <button
                 onClick={() => handleCheckIn(spot.id)}
                 disabled={checkingIn === spot.id}
-                className={`px-5 py-2 rounded-lg font-bold text-sm text-white shadow-sm transition-all ${
+                className={`px-5 py-2 rounded-lg font-bold text-xs md:text-sm text-white shadow-sm transition-all ${
                   checkingIn === spot.id
                     ? "bg-gray-400"
                     : "bg-blue-600 hover:bg-blue-700 active:scale-95"
@@ -175,10 +231,14 @@ export default function GuardDashboard() {
               </button>
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-3 flex justify-between items-center border border-blue-100">
+            <div className="bg-blue-500/5 rounded-lg p-3 flex justify-between items-center border border-blue-500/20">
               <div className="flex items-start gap-2">
                 <span className="text-lg">📋</span>
-                <p className="text-xs text-blue-800 font-medium leading-relaxed">
+                <p
+                  className={`text-xs md:text-[13px] font-medium leading-relaxed ${
+                    isDark ? "text-blue-200" : "text-blue-700"
+                  }`}
+                >
                   {spot.instruction || "Verify perimeter and check locks."}
                 </p>
               </div>
@@ -198,10 +258,12 @@ export default function GuardDashboard() {
       <div className="fixed bottom-6 left-0 right-0 px-4 z-40">
         <button
           onClick={handleSOS}
-          className={`w-full py-4 rounded-xl font-black text-xl shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
+          className={`w-full py-4 rounded-xl font-black text-lg md:text-xl shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
             isSosActive
               ? "bg-red-600 animate-pulse text-white"
-              : "bg-slate-900 text-red-500 border-2 border-red-600"
+              : isDark
+                ? "bg-slate-900 text-red-400 border-2 border-red-600"
+                : "bg-white text-red-600 border-2 border-red-500"
           }`}
         >
           <span>🚨</span>
